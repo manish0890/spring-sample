@@ -1,0 +1,15 @@
+# Deployment / CI files
+.gitlab-ci.yml
+kubernetes.yml
+
+Dockerfile
+
+.idea
+**/*.iml
+**/.DS_Store
+**/.git
+
+
+**/target
+
+**/.m2

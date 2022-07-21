@@ -1,0 +1,57 @@
+# sample file
+
+stages:
+  - test
+  - build
+  - deploy
+
+# region reusable strings
+.JAVA_IMAGE_TMPL: &JAVA_IMAGE openjdk:18-ea-11-jdk-alpine3.15
+# endregion reusable strings
+
+# region job templates
+.unit_test_base:
+  imagee: *JAVA_IMAGE
+  stage: test
+
+# endregion job templates
+
+Unit Tests:
+  extends: .unit_test_base
+  artifacts:
+    paths:
+      - target/surefire-reports
+      - target/classes
+      - target/test-classes
+      - target/coverage-ut
+      - target/dependencies
+    expire_in: 1d
+  script:
+    - ./mvnw test
+
+Integration Tests:
+  extends: .unit_test_base
+  services:
+    - name: docker.elastic.co/elasticsearch/elasticsearch:7.9.0
+      alias: elasticsearch
+      command: ["bin/elasticsearch", "-Ediscovery.type=single-node"]
+  artifacts:
+    paths:
+      - target/surefire-reports
+      - target/classes
+      - target/test-classes
+      - target/coverage-it
+      - target/dependencies
+    expire_in: 1d
+  script:
+    - ./mvnw -P integration-test test
+
+Build image:
+  stage: build
+  image: docker:dind
+  script:
+    - docker build --no-cache 
+      -t spring-sample:$CI_COMMIT_SHA
+      -t spring-sample:latest .
+    - docker push spring-sample:$CI_COMMIT_SHA
+    - docker push spring-sample:latest
