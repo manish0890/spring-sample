@@ -5,9 +5,11 @@ import com.manish0890.spring.sample.persistance.document.User;
 import com.manish0890.spring.sample.persistance.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
 import static com.manish0890.spring.sample.TestUtility.getSampleUser;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
@@ -54,6 +56,18 @@ public class UserESServiceUnitTest {
 
         // mock some responses
         when(repository.existsById(eq(id))).thenReturn(false);
+
+        // Alternative ways
+
+        // Following will try to return id in the response but will fail since required return type is boolean
+        // when(repository.existsById(eq(id))).then(AdditionalAnswers.returnsFirstArg());
+
+        // Following will let you control the answer and also let you do assertions
+//        when(repository.existsById(eq(id))).thenAnswer((Answer<?>) invocation -> {
+//            String argumentId = invocation.getArgument(0);
+//            assertEquals(id, argumentId);
+//            return false;
+//        });
 
         // Exercise test method and perform assertions
         NotFoundException e = assertThrows(NotFoundException.class,
